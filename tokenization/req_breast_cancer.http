@@ -1,0 +1,4 @@
+POST http://10.1.100.45/files/breast_cancer
+Content-Type: application/json
+
+< ./input_breast_cancer.json

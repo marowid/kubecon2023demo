@@ -1,0 +1,11 @@
+bundle: kubernetes
+applications:
+  minio:
+    charm: minio
+    channel: ckf-1.6/stable
+    scale: 1
+    options:
+      access-key: minio123
+      secret-key: minio123
+    storage:
+      minio-data: kubernetes,1,10240M
