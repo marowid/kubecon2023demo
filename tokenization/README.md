@@ -13,22 +13,11 @@ juju bootstrap microk8s micro
 juju deploy ./bundle.yaml
 ```
 
-Edit the Minio Service (svc - minio, namespace - kubeflow) type to NodePort
-
 ## Create S3 buckets
 
 Create S3 buckets in Minio:
 - tokens
 - data
-
-## Upload new data using JSON
-Change the URL.
-```http request
-POST http://10.1.100.45/files/breast_cancer
-Content-Type: application/json
-
-< ./input_breast_cancer.json
-```
 
 ## Build application
 ```shell
@@ -53,4 +42,13 @@ spec:
     - name: TOKENIZER_STORAGE_URL
       value: http://minio.kubeflow.svc.cluster.local:9000/
 END
+```
+
+## Upload new data using JSON
+Change the URL.
+```http request
+POST http://10.1.100.45/files/breast_cancer
+Content-Type: application/json
+
+< ./input_breast_cancer.json
 ```
