@@ -141,7 +141,11 @@ applications:
     charm: minio
     channel: ckf-1.6/stable
     scale: 1
-    _github_repo_name: minio-operator
+    options:
+      mode: gateway
+      gateway-storage-service: azure
+      access-key: include-file://./secrets/access-key.secret
+      secret-key: include-file://./secrets/secret-key.secret
   oidc-gatekeeper:
     charm: oidc-gatekeeper
     channel: ckf-1.6/stable
