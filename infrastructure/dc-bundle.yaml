@@ -21,14 +21,17 @@ applications:
     channel: 2.31/stable
     scale: 1
     trust: true
+    options:
+      public-url: http://10.64.140.43.nip.io
+      static-username: admin
+      static-password: admin
     _github_repo_name: dex-auth-operator
   istio-ingressgateway:
     charm: istio-gateway
     channel: 1.11/stable
     scale: 1
-    trust: true
-    _github_repo_name: istio-operators
     options:
+      gateway_service_type: NodePort
       kind: ingress
   istio-pilot:
     charm: istio-pilot
@@ -150,6 +153,8 @@ applications:
     charm: oidc-gatekeeper
     channel: ckf-1.6/stable
     scale: 1
+    options:
+      public-url: http://10.64.140.43.nip.io
     _github_repo_name: oidc-gatekeeper-operator
   seldon-controller-manager:
     charm: seldon-core
