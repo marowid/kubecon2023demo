@@ -16,16 +16,19 @@ juju deploy ./bundle.yaml
 ## Create S3 buckets
 
 Create S3 buckets in Minio:
+
 - tokens
 - data
 
 ## Build application
+
 ```shell
 docker build . -t bponieckiklotz/tokenization-app:dev
 docker push bponieckiklotz/tokenization-app:dev
 ```
 
-## Deploy in K8s cluster: 
+## Deploy in Kubernetes cluster
+
 TODO change it to deployment with service exposing it
 
 ```shell
@@ -41,14 +44,18 @@ spec:
     env:
     - name: TOKENIZER_STORAGE_URL
       value: http://minio.kubeflow.svc.cluster.local:9000/
+    - name: TOKENIZER_STORAGE_KEY
+      value: use_a_secret_here
+    - name: TOKENIZER_STORAGE_SECRET
+      value: use_a_secret_here
+
 END
 ```
 
 ## Upload new data using JSON
-Change the URL.
-```http request
-POST http://10.1.100.45/files/breast_cancer
-Content-Type: application/json
 
-< ./input_breast_cancer.json
+Change the URL in the call-model script.
+
+```curl
+sh call-model.sh | jq '. | to_entries[] | select( .key | contains("name", "tumor", "id", "stage"))'
 ```

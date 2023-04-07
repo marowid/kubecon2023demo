@@ -13,7 +13,6 @@ class Pam50(BaseModel):
 
 
 class ClinicalDataBreastCancer(BaseModel):
-
     complete_tcga_id: str
     gender: str
     age_at_initial_pathologic_diagnosis: int
@@ -48,14 +47,15 @@ class ClinicalDataBreastCancer(BaseModel):
     last_name: str
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     from fastapi.encoders import jsonable_encoder
+
     c = ClinicalDataBreastCancer(
-        complete_tcga_id = "TCGA-A2-A0T2",
-        gender= "FEMALE",
+        complete_tcga_id="TCGA-A2-A0T2",
+        gender="FEMALE",
         age_at_initial_pathologic_diagnosis=66,
         er_status="Negative",
-        pr_status = "Negative",
+        pr_status="Negative",
         her2_final_status="Negative",
         tumor="T3",
         tumor_t1_coded="T_Other",
