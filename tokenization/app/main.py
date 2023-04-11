@@ -14,9 +14,9 @@ from app.tokenization import Tokenizer
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
-STORAGE_KEY = os.getenv("TOKENIZER_STORAGE_KEY") or "minio123"
-STORAGE_SECRET = os.getenv("TOKENIZER_STORAGE_SECRET") or "minio123"
-STORAGE_URL = os.getenv("TOKENIZER_STORAGE_URL") or "http://10.152.183.193:9000"
+STORAGE_KEY = os.getenv("TOKENIZER_STORAGE_KEY", "minio123")
+STORAGE_SECRET = os.getenv("TOKENIZER_STORAGE_SECRET", "minio123")
+STORAGE_URL = os.getenv("TOKENIZER_STORAGE_URL", "http://10.152.183.193:9000")
 
 TOKENS_BUCKET = "tokens"
 DATA_BUCKET = "data"
@@ -24,11 +24,26 @@ DATA_PAM50_PREFIX = "pam50"
 DATA_BREAST_CANCER_PREFIX = "breast_cancer"
 DATA_CANCER_PROTEOMES_PREFIX = "cancer_proteomes"
 
-TOKEN = (
-    os.getenv("TOKENIZER_TOKEN_VALUE")
-    or "5aLNDuGa0HlpRhINCmWRInIgjjG6xuatcEaI6GufjnwzxUMYVbptvtFwK0RpPKGKOQFXksso2jL+Pv4ozFUm+2dpeYIjxzN0785lM5loKHJsU+/FCj6cDoqINWnotK3oBQ5E20kgcBVgOu5MY/wx8P2Yv2Afln6rjRZaj/o9Xt3qMKmbMP0ExQaHLcEMfJlqzOyxwzKPTgEj3peWwLJPO2K6RS+htEMwjvbUvROTyWYTjwXy44eqdfYmYJDI3HP2czhz53XotxS5Zw2+PZlmNiwSttdl0EE0Eu4qpeOz5W+I6vQUFocnGhhZ8vSdbvMg3IgMbmGfpnfFnlwwDQHK295Qnwyuq1gd9XqrIha9BvgdU1lmVS1hHt5PUtAXQe45FOwhL8YqZG+Q2zIyMhycKxmDzUkST7/+loppTO0ZwjRz1gzKVb"
+TOKEN = os.getenv(
+    "TOKENIZER_TOKEN_VALUE",
+    "5aLNDuGa0HlpRhINCmWRInIgjjG6xuatcEaI6GufjnwzxUMYVbptvtFwK0RpPKGKOQFXksso2jL+Pv4ozFUm+2dpeYIjxzN0785lM5loKHJsU+/FCj6cDoqINWnotK3oBQ5E20kgcBVgOu5MY/wx8P2Yv2Afln6rjRZaj/o9Xt3qMKmbMP0ExQaHLcEMfJlqzOyxwzKPTgEj3peWwLJPO2K6RS+htEMwjvbUvROTyWYTjwXy44eqdfYmYJDI3HP2czhz53XotxS5Zw2+PZlmNiwSttdl0EE0Eu4qpeOz5W+I6vQUFocnGhhZ8vSdbvMg3IgMbmGfpnfFnlwwDQHK295Qnwyuq1gd9XqrIha9BvgdU1lmVS1hHt5PUtAXQe45FOwhL8YqZG+Q2zIyMhycKxmDzUkST7/+loppTO0ZwjRz1gzKVb",
 )
-TOKEN_ID = os.getenv("TOKENIZER_TOKEN_ID") or "c640aad2-d87e-4eea-b523-4fea8fd04718"
+TOKEN_ID = os.getenv("TOKENIZER_TOKEN_ID", "c640aad2-d87e-4eea-b523-4fea8fd04718")
+
+
+def init_token(bucket, token, token_id, s3_client):
+    token_objects = s3_client.list_objects_v2(Bucket=bucket)
+    if token_objects.get("KeyCount") > 0:
+        token_files = [f.get("Key") for f in token_objects.get("Contents")]
+        if token_id not in token_files:
+            s3_client.put_object(Body=token, Bucket=bucket, Key=token_id)
+            logger.info(f"Created a token file for id:{token_id}")
+        else:
+            logger.info(f"Token key found for id: {token_id}")
+    else:
+        s3_client.put_object(Body=token, Bucket=bucket, Key=token_id)
+        logger.info(f"Created a token file for id:{token_id}")
+
 
 tokenizer = Tokenizer(TOKEN)
 
@@ -40,17 +55,7 @@ s3 = boto3.client(
     endpoint_url=STORAGE_URL,
 )
 
-token_objects = s3.list_objects_v2(Bucket=TOKENS_BUCKET)
-if token_objects.get("KeyCount") > 0:
-    token_files = [f.get("Key") for f in token_objects.get("Contents")]
-    if TOKEN_ID not in token_files:
-        s3.put_object(Body=TOKEN, Bucket=TOKENS_BUCKET, Key=TOKEN_ID)
-        logger.info(f"Created a token file for id:{TOKEN_ID}")
-    else:
-        logger.info(f"Token key found for id: {TOKEN_ID}")
-else:
-    s3.put_object(Body=TOKEN, Bucket=TOKENS_BUCKET, Key=TOKEN_ID)
-    logger.info(f"Created a token file for id:{TOKEN_ID}")
+init_token(logger, TOKENS_BUCKET, TOKEN, TOKEN_ID, s3)
 
 # initial data processing / upload
 s3.upload_file(
